@@ -1,0 +1,32 @@
+version: '3.4'
+
+#create a volume for the my sql container.To ensure Data persists after my sql container is stopped
+volumes:
+  datafiles:
+
+
+services:
+  database:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - datafiles:/var/lib/postgresql/data/
+      #- "~/sql-scripts/setup.sql:/docker-entrypoint-initdb.d/1.sql"
+    restart: always
+    environment: 
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DATABASE: interviewDb
+  api:
+    build:
+      context: .
+      dockerfile: TP24.Api/Dockerfile
+    depends_on: 
+      - database
+    ports:
+      - "5000:80"
+    restart: always
+    environment: 
+      - ConnectionString=host=database;port=5432;database=interviewDatabase;username=root;password=password;Pooling=true;
+      - ASPNETCORE_ENVIRONMENT=Development
